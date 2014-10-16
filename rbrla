@@ -27,7 +27,7 @@ class MyDisplay():
 
 	def addLabel(self):
 		self.l = Label(self.display)
-		self.l.config(text='hello', fg='#333333', font=('Arial', 16))
+		self.l.config(fg='#333333', font=('Arial', 16))
 		self.l.place(relx=0.5, rely=0.5, anchor=CENTER)
 
 	def bindEvents(self):
@@ -37,7 +37,7 @@ class MyDisplay():
 		self.display.bind('<B1-Motion>', self.move)
 
 	def closeEvent(self, event):
-		self.i = 0
+		self.tomato = 0
 		self.s.join()
 		self.display.destroy()
 
@@ -56,19 +56,34 @@ class MyDisplay():
 		self.startCountdown()
 
 	def startCountdown(self):
-		self.i = 25*60
-		print('%f' % time.time())
 		self.s = Thread(target=self.countdown)
 		self.s.start()
 
 	def countdown(self):
-		while self.i > 0:
-			self.i -= 1
-			theTime = time.strftime('%M:%S', time.gmtime(self.i))
-			self.l.config(text='{0}'.format(theTime))
-			#self.l.config(text='{0} - {1:0.6f}'.format(theTime, time.time()-int(time.time())))
-			time.sleep(1)
+		self.init()
+		while self.tomato > 0:
+			self.tomato -= self.interval
+			self.setDisplay(self.tomato)
+			if self.tomato > 0:
+				self.prepareNext()
 		print('%f' % time.time())
+
+	def init(self):
+		self.tomato = 25*60
+		self.interval = 1
+		print('%f' % time.time())
+		self.next = time.time() + self.interval
+		self.setDisplay(self.tomato)
+		time.sleep(self.next - time.time())
+
+	def setDisplay(self, text):
+		theTime = time.strftime('%M:%S', time.gmtime(text))
+		self.l.config(text='{0}'.format(theTime))
+		#self.l.config(text='{0} {1}'.format(theTime, time.time()))
+
+	def prepareNext(self):
+		self.next += self.interval
+		time.sleep(self.next - time.time())
 
 	def run(self):
 		self.startCountdown()
